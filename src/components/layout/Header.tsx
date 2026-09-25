@@ -5,7 +5,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useRealtimeSync } from '@/hooks/useRealtime';
 
 export default function Header({ percent, onMenu }: { percent: number; onMenu: () => void }) {
-  const { user, signOut } = useAuth();
+  const { user, signOut, role, isAdmin } = useAuth();
   const { online } = useRealtimeSync();
   const [q, setQ] = useState('');
   const [authOpen, setAuthOpen] = useState(false);
@@ -46,10 +46,26 @@ export default function Header({ percent, onMenu }: { percent: number; onMenu: (
                   <>
                     <div className="text-xs text-muted">Signed in as</div>
                     <div className="text-sm text-text break-all mt-0.5">{user.email}</div>
+                    <div className="mt-1"><span className="badge">{role}</span></div>
                     <div className="flex gap-2 pt-3">
+                      <button className="btn flex-1 justify-center whitespace-nowrap" onClick={() => { setAuthOpen(false); nav('/dashboard'); }}>
+                        Dashboard
+                      </button>
                       <button className="btn flex-1 justify-center whitespace-nowrap" onClick={() => { setAuthOpen(false); nav('/settings'); }}>
                         <SettingsIcon size={14} className="shrink-0" /> Settings
                       </button>
+                    </div>
+                    {isAdmin && (
+                      <div className="flex gap-2 pt-2">
+                        <button className="btn flex-1 justify-center whitespace-nowrap" onClick={() => { setAuthOpen(false); nav('/admin'); }}>
+                          Admin console
+                        </button>
+                        <button className="btn flex-1 justify-center whitespace-nowrap" onClick={() => { setAuthOpen(false); nav('/admin/users'); }}>
+                          Monitoring
+                        </button>
+                      </div>
+                    )}
+                    <div className="flex gap-2 pt-2">
                       <button className="btn flex-1 justify-center whitespace-nowrap" onClick={handleSignOut}>
                         <LogOut size={14} className="shrink-0" /> Log out
                       </button>
