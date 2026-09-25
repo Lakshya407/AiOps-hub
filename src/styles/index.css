@@ -1,0 +1,17 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root { color-scheme: dark; }
+body { @apply bg-ink text-text font-sans antialiased; }
+a { @apply text-text; }
+.card { @apply bg-surface border border-border rounded-2xl; }
+.btn { @apply inline-flex items-center gap-2 rounded-xl border border-border bg-surface2 px-3.5 py-2 text-sm hover:border-muted transition; }
+.btn-primary { @apply bg-text text-ink border-text hover:opacity-90 font-medium; }
+.btn-accent { @apply bg-accentDim/30 border-accent/40 text-text; }
+.input { @apply w-full bg-surface2 border border-border rounded-xl px-3 py-2 text-sm placeholder:text-muted/70 focus:outline-none focus:border-muted; }
+.label { @apply text-xs text-muted mb-1 block; }
+.badge { @apply text-[11px] px-2 py-0.5 rounded-full border border-border text-muted; }
+.rope { background-image: linear-gradient(to bottom, #3a3a41 60%, transparent 40%); background-size: 2px 10px; background-repeat: repeat-y; background-position: center; }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb { background: #2c2c33; border-radius: 8px; }

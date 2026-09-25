@@ -1,0 +1,7 @@
+-- Custom 19-skill curriculum: rename kept skills, drop removed ones (cascades topics/progress).
+-- Safe to run multiple times.
+update public.skills set title='Python', description='Python for automation, APIs and tooling. Now: Developing -> Target: Intermediate.', sort_order=5, estimated_hours=18, phase_id='87d199a6-bcd1-52df-b684-1447658416a9' where title='Python Automation';
+update public.skills set title='CI/CD', description='Pipeline stages/jobs/artifacts, image builds, secrets, troubleshooting. Now: Basic -> Target: Intermediate.', sort_order=11, estimated_hours=12, phase_id='803b8395-df74-5389-804f-57721fcd20c4' where title='CI/CD and GitOps';
+update public.skills set title='LLMs', description='Inference and tool use for infra agents. Now: Developing -> Target: Intermediate.', sort_order=17, estimated_hours=10, phase_id='86820ba4-b109-5961-8209-3ba504f479f8' where title='LLM Fundamentals';
+update public.skills set title='Agentic AI', description='Agent loops, MCP, memory, guardrails plus RAG essentials. Now: Learning -> Target: Intermediate.', sort_order=18, estimated_hours=14, phase_id='86820ba4-b109-5961-8209-3ba504f479f8' where title='AI Agents';
+delete from public.skills where title in ('RAG', 'Infrastructure Tool Integration', 'Incident Detection', 'Incident Correlation and RCA', 'Safe Remediation', 'Production Hardening', 'Portfolio and Interview Preparation', 'CI/CD and GitOps');

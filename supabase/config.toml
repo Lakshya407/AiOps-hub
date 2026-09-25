@@ -1,0 +1,4 @@
+# Local supabase config placeholder (supabase CLI)
+project_id = "aiops-learning-hub"
+[api]
+enabled = true
