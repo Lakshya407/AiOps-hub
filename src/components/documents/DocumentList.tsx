@@ -6,6 +6,7 @@ import type { DocRow } from '@/types';
 
 export default function DocumentList({ docs, topics, onChanged }: { docs: DocRow[]; topics?: { id: string; title: string }[]; onChanged: () => void }) {
   const [busy, setBusy] = useState<string | null>(null);
+  const [err, setErr] = useState<string | null>(null);
   const topicOf = (id: string | null) => (topics ?? []).find((t) => t.id === id)?.title;
   if (!docs.length) return <p className="text-sm text-muted">No documents yet. Upload files linked to this skill or a specific topic below.</p>;
   return (
@@ -33,12 +34,21 @@ export default function DocumentList({ docs, topics, onChanged }: { docs: DocRow
           }}><Download size={15} /></a>
           <button className="btn !px-2.5" title="Delete" onClick={async () => {
             if (!confirm(`Delete "${d.title}"?`)) return;
-            setBusy(d.id);
-            try { await deleteDocument(d.id, d.file_path); onChanged(); } finally { setBusy(null); }
+            setBusy(d.id); setErr(null);
+            try {
+              const { storageWarning } = await deleteDocument(d.id, d.file_path);
+              if (storageWarning) setErr(storageWarning);
+            } catch (e: any) {
+              setErr(e?.message ?? 'Delete failed.');
+            } finally {
+              setBusy(null);
+              onChanged(); // always refresh: the row may be gone even on partial failure
+            }
           }}><Trash2 size={15} /></button>
           {busy === d.id && <span className="text-[11px] text-muted">…</span>}
         </div>
       ))}
+      {err && <p className="text-xs text-red-300">{err}</p>}
     </div>
   );
 }

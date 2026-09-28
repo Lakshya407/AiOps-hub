@@ -1,7 +1,7 @@
 import { useAuth } from '@/hooks/useAuth';
 import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { seedRoadmap } from '@/services/roadmap';
+import { seedRoadmap, TRACKS, type SeedTrack } from '@/services/roadmap';
 import { supabase } from '@/lib/supabase/client';
 
 export default function Settings() {
@@ -21,11 +21,15 @@ export default function Settings() {
         </div>
         <div>
           <div className="text-sm font-medium">Curriculum seed</div>
-          <p className="text-xs text-muted mb-2">Idempotent. Never overwrites progress.</p>
-          <button className="btn" onClick={async () => {
-            try { await seedRoadmap(); await qc.invalidateQueries(); setMsg('Roadmap seeded.'); }
-            catch (e: any) { setMsg(e.message); }
-          }}>Re-run seed</button>
+          <p className="text-xs text-muted mb-2">Idempotent per track. Never overwrites progress.</p>
+          <div className="flex flex-wrap gap-2">
+            {(['aiops', 'onprem'] as SeedTrack[]).map((t) => (
+              <button key={t} className="btn" onClick={async () => {
+                try { await seedRoadmap(t); await qc.invalidateQueries(); setMsg(`${TRACKS[t].label} track seeded.`); }
+                catch (e: any) { setMsg(e.message); }
+              }}>Re-run {TRACKS[t].label} seed</button>
+            ))}
+          </div>
         </div>
         <div>
           <div className="text-sm font-medium">Change password</div>

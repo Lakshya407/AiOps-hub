@@ -1,89 +1,181 @@
-import { useAuth } from '@/hooks/useAuth';
+import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
+import {
+  fetchAdminCounts, fetchRecentActivity, fetchRecentRegistrations,
+  fetchRecentUploads, fetchRecentCompletions, AdminNotProvisionedError,
+  type AdminCounts, type AdminActivityItem,
+} from '@/lib/auth/admin';
+import { displayNameOf } from '@/lib/auth/roles';
 
-/** Admin panel 1/2: Admin Console — totals, active users, recent activity. */
+function fmtDate(iso: string | null): string {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleDateString();
+}
+
+function fmtTime(iso: string | null): string {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleTimeString();
+}
+
+function friendlyAction(eventType: string): string {
+  return eventType.replace(/^topic_/, 'topic ').replace(/^auth_/, '').replace(/_/g, ' ');
+}
+
+/** Admin panel 1/2: Admin Console — totals, presence, recent activity. */
 export default function AdminConsole() {
-  const { users, totalUsers, activeUsers, activeCount, recentActivity, refreshAdmin, user } = useAuth();
+  const { user } = useAuth();
   const nav = useNavigate();
+  const [counts, setCounts] = useState<AdminCounts | null>(null);
+  const [activity, setActivity] = useState<AdminActivityItem[]>([]);
+  const [regs, setRegs] = useState<any[]>([]);
+  const [uploads, setUploads] = useState<any[]>([]);
+  const [completions, setCompletions] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const adminCount = users.filter((u) => u.role === 'admin').length;
-  const userCount = users.filter((u) => u.role === 'user').length;
+  const load = useCallback(async () => {
+    setLoading(true); setError(null);
+    try {
+      const [c, a, r, u, d] = await Promise.all([
+        fetchAdminCounts(),
+        fetchRecentActivity(50),
+        fetchRecentRegistrations(8),
+        fetchRecentUploads(8),
+        fetchRecentCompletions(8),
+      ]);
+      setCounts(c); setActivity(a); setRegs(r); setUploads(u); setCompletions(d);
+    } catch (e: any) {
+      setError(e instanceof AdminNotProvisionedError ? e.message : (e?.message ?? 'Failed to load admin data.'));
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { void load(); }, [load]);
 
   return (
     <div>
-      <h1 className="text-lg font-semibold">Admin console</h1>
-      <p className="text-sm text-muted">
-        Signed in as <span className="text-text">{user?.email}</span> · admin view of the AIOps Hub.
-      </p>
-
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-4">
-        {[
-          ['Total users', String(totalUsers)],
-          ['Active now (5 min)', String(activeCount)],
-          ['Admins', String(adminCount)],
-          ['Users', String(userCount)],
-        ].map(([k, v]) => (
-          <div key={k} className="card p-3.5">
-            <div className="text-[11px] text-muted">{k}</div>
-            <div className="text-lg font-semibold">{v}</div>
-          </div>
-        ))}
-      </div>
-
-      <div className="grid sm:grid-cols-2 gap-3 mt-3">
-        <div className="card p-4">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="text-sm font-medium flex-1">Active users</div>
-            <button className="btn !py-1 text-xs" onClick={() => refreshAdmin()}>Refresh</button>
-          </div>
-          {activeUsers.length === 0 ? (
-            <p className="text-sm text-muted">Nobody active in the last 5 minutes besides you. Presence updates every 30s per logged-in tab.</p>
-          ) : (
-            <ul className="space-y-1.5">
-              {activeUsers.slice(0, 20).map((a) => (
-                <li key={a.userId} className="text-sm flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-accent" />
-                  <span className="flex-1 truncate">{a.email}</span>
-                  <span className="text-[11px] text-muted">{new Date(a.lastSeen).toLocaleTimeString()}</span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-        <div className="card p-4">
-          <div className="text-sm font-medium mb-1">Logged-in directory</div>
-          <p className="text-xs text-muted mb-2">
-            {totalUsers} known account{totalUsers === 1 ? '' : 's'} (Supabase profiles + local presence).
+      <div className="flex items-center gap-3">
+        <div className="flex-1">
+          <h1 className="text-lg font-semibold">Admin console</h1>
+          <p className="text-sm text-muted">
+            Signed in as <span className="text-text">{user?.email}</span> · admin view of the AIOps Hub.
           </p>
-          <ul className="space-y-1.5 max-h-48 overflow-y-auto">
-            {users.slice(0, 30).map((u) => (
-              <li key={u.id} className="text-sm flex items-center gap-2">
-                <span className={`badge ${u.role === 'admin' ? '!border-accent' : ''}`}>{u.role}</span>
-                <span className="flex-1 truncate">{u.email}</span>
-                <span className={`w-2 h-2 rounded-full ${u.isActive ? 'bg-accent' : 'bg-border'}`} title={u.isActive ? 'Active' : 'Idle'} />
-              </li>
-            ))}
-          </ul>
-          <button className="btn mt-3" onClick={() => nav('/admin/users')}>Open user monitoring</button>
         </div>
+        <button className="btn whitespace-nowrap" onClick={() => load()}>Refresh</button>
       </div>
 
-      <div className="card p-4 mt-3">
-        <div className="text-sm font-medium mb-2">Recent activity</div>
-        {recentActivity.length === 0 ? (
-          <p className="text-sm text-muted">No activity yet. Topic completions, sign-ins and admin changes appear here.</p>
-        ) : (
-          <ol className="space-y-1.5 max-h-80 overflow-y-auto">
-            {recentActivity.slice(0, 50).map((a) => (
-              <li key={a.id} className="text-xs flex items-center gap-2">
-                <span className="text-muted whitespace-nowrap">{new Date(a.createdAt).toLocaleString()}</span>
-                <span className="badge !py-0.5">{a.eventType}</span>
-                <span className="flex-1 truncate text-muted">{a.email ?? a.ownerId.slice(0, 8)}</span>
-              </li>
+      {loading && <p className="text-sm text-muted mt-4">Loading admin data…</p>}
+      {error && (
+        <div className="card p-4 mt-4">
+          <div className="text-sm font-medium">Couldn’t load admin data</div>
+          <p className="text-xs text-muted mt-1 leading-relaxed">{error}</p>
+        </div>
+      )}
+
+      {!loading && !error && counts && (
+        <>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-4">
+            {[
+              ['Total registered users', String(counts.totalUsers)],
+              ['Active now (5 min)', String(counts.activeUsers)],
+              ['Tracked sessions', String(counts.trackedSessions)],
+              ['New this week', String(counts.newThisWeek)],
+            ].map(([k, v]) => (
+              <div key={k} className="card p-3.5">
+                <div className="text-[11px] text-muted">{k}</div>
+                <div className="text-lg font-semibold">{v}</div>
+              </div>
             ))}
-          </ol>
-        )}
-      </div>
+          </div>
+          <p className="text-[11px] text-muted mt-2 leading-relaxed">
+            Active now = heartbeat within the last 5 minutes. Tracked sessions = heartbeat within
+            30 minutes or a login without a later logout. Browser closes and expired sessions age
+            out automatically; raw Supabase Auth sessions are not enumerated.
+          </p>
+
+          <div className="grid sm:grid-cols-3 gap-3 mt-3">
+            <div className="card p-4">
+              <div className="text-sm font-medium mb-2">Recent registrations</div>
+              {regs.length === 0 ? (
+                <p className="text-xs text-muted">No registrations yet.</p>
+              ) : (
+                <ul className="space-y-1.5">
+                  {regs.map((r) => (
+                    <li key={r.id} className="text-xs flex items-center gap-2">
+                      <span className="flex-1 truncate">{displayNameOf(r)}</span>
+                      <span className="text-muted whitespace-nowrap">{fmtDate(r.created_at)}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+            <div className="card p-4">
+              <div className="text-sm font-medium mb-2">Recent document uploads</div>
+              {uploads.length === 0 ? (
+                <p className="text-xs text-muted">No uploads yet.</p>
+              ) : (
+                <ul className="space-y-1.5">
+                  {uploads.map((d) => (
+                    <li key={d.id} className="text-xs">
+                      <div className="truncate">{d.title}</div>
+                      <div className="text-muted">{d.email ?? '—'} · {fmtDate(d.created_at)}</div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+            <div className="card p-4">
+              <div className="text-sm font-medium mb-2">Recent skill completions</div>
+              {completions.length === 0 ? (
+                <p className="text-xs text-muted">No completions yet.</p>
+              ) : (
+                <ul className="space-y-1.5">
+                  {completions.map((c, i) => (
+                    <li key={`${c.topic_id}-${c.owner_id}-${i}`} className="text-xs">
+                      <div className="truncate">Topic completed</div>
+                      <div className="text-muted">{c.email ?? '—'} · {fmtDate(c.completed_at ?? c.updated_at)}</div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
+
+          <div className="card p-4 mt-3">
+            <div className="text-sm font-medium mb-2">Recent activity</div>
+            {activity.length === 0 ? (
+              <p className="text-sm text-muted">No activity yet. Sign-ins, completions and admin changes appear here.</p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-left text-[11px] uppercase tracking-widest text-muted">
+                      <th className="py-1.5 pr-3">User</th>
+                      <th className="py-1.5 pr-3">Action</th>
+                      <th className="py-1.5 pr-3">Date</th>
+                      <th className="py-1.5">Time</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {activity.map((a) => (
+                      <tr key={a.id} className="border-t border-border">
+                        <td className="py-1.5 pr-3 max-w-[220px] truncate">{a.displayName ?? a.email ?? a.ownerId.slice(0, 8)}</td>
+                        <td className="py-1.5 pr-3"><span className="badge !py-0.5">{friendlyAction(a.eventType)}</span></td>
+                        <td className="py-1.5 pr-3 text-muted whitespace-nowrap">{fmtDate(a.createdAt)}</td>
+                        <td className="py-1.5 text-muted whitespace-nowrap">{fmtTime(a.createdAt)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+
+          <button className="btn mt-3" onClick={() => nav('/admin/users')}>Open user monitoring</button>
+        </>
+      )}
     </div>
   );
 }

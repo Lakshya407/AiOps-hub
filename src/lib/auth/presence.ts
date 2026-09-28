@@ -1,88 +1,89 @@
-/** Auth-section presence + activity helpers (local-first so nothing breaks pre-migration). */
+/**
+ * Auth-section presence + activity helpers (database-backed).
+ *
+ * Windows (documented, used by the Admin Console):
+ * - ACTIVE_WINDOW: last_seen_at within the last 5 minutes  -> "active now".
+ * - SESSION_WINDOW: last_seen_at within 30 minutes OR last_login_at newer than
+ *   last_logout_at -> "tracked session". Browser closes and expired sessions
+ *   age out automatically through heartbeat expiry; the app does not claim to
+ *   enumerate raw Supabase Auth sessions (no server access to them).
+ */
+import type { SupabaseClient } from '@supabase/supabase-js';
 
-export interface PresenceEntry {
-  userId: string;
-  email: string;
-  lastSeen: string;
+export const ACTIVE_WINDOW_MS = 5 * 60 * 1000;
+export const SESSION_WINDOW_MS = 30 * 60 * 1000;
+
+export interface PresenceRow {
+  user_id: string;
+  email: string | null;
+  last_seen_at: string | null;
+  last_login_at: string | null;
+  last_logout_at: string | null;
 }
 
-export interface ActivityItem {
-  id: string;
+export function isActive(lastSeenAt: string | null, now = Date.now()): boolean {
+  if (!lastSeenAt) return false;
+  return now - new Date(lastSeenAt).getTime() <= ACTIVE_WINDOW_MS;
+}
+
+/** "Tracked session": recent heartbeat or a login without a later logout. */
+export function hasTrackedSession(p: PresenceRow | null | undefined, now = Date.now()): boolean {
+  if (!p) return false;
+  if (p.last_seen_at && now - new Date(p.last_seen_at).getTime() <= SESSION_WINDOW_MS) return true;
+  if (p.last_login_at && (!p.last_logout_at || new Date(p.last_login_at) > new Date(p.last_logout_at))) return true;
+  return false;
+}
+
+async function bestEffort(p: PromiseLike<unknown>): Promise<void> {
+  try { await p; } catch { /* presence/activity must never break the app */ }
+}
+
+/** Heartbeat: upsert last_seen_at (RLS: users own their row). */
+export function touchPresence(db: SupabaseClient, userId: string, email: string | null): Promise<void> {
+  return bestEffort(
+    (db.from('user_presence') as any).upsert(
+      { user_id: userId, email, last_seen_at: new Date().toISOString() },
+      { onConflict: 'user_id' },
+    ),
+  );
+}
+
+export function markLogin(db: SupabaseClient, userId: string, email: string | null): Promise<void> {
+  const now = new Date().toISOString();
+  return bestEffort(
+    (db.from('user_presence') as any).upsert(
+      { user_id: userId, email, last_login_at: now, last_seen_at: now },
+      { onConflict: 'user_id' },
+    ),
+  );
+}
+
+export function markLogout(db: SupabaseClient, userId: string): Promise<void> {
+  return bestEffort(
+    (db.from('user_presence') as any)
+      .update({ last_logout_at: new Date().toISOString() })
+      .eq('user_id', userId),
+  );
+}
+
+export interface AuthEvent {
   ownerId: string;
-  email: string | null;
   eventType: string;
   entityType: string;
-  createdAt: string;
-  metadata: Record<string, unknown>;
+  entityId?: string | null;
+  /** Safe metadata only — never document content or secrets. */
+  metadata?: Record<string, unknown>;
 }
 
-const PRESENCE_KEY = 'aiops_presence_v1';
-const ACTIVITY_KEY = 'aiops_local_activity_v1';
-const ACTIVE_WINDOW_MS = 5 * 60 * 1000;
-const MAX_LOCAL_ACTIVITY = 200;
-
-export function readPresence(): Record<string, PresenceEntry> {
-  try {
-    return JSON.parse(localStorage.getItem(PRESENCE_KEY) ?? '{}');
-  } catch {
-    return {};
-  }
-}
-
-export function heartbeat(userId: string, email: string): Record<string, PresenceEntry> {
-  const all = readPresence();
-  all[userId] = { userId, email, lastSeen: new Date().toISOString() };
-  // prune entries older than 24h to keep storage small
-  const cutoff = Date.now() - 24 * 3600 * 1000;
-  for (const k of Object.keys(all)) {
-    if (new Date(all[k].lastSeen).getTime() < cutoff) delete all[k];
-  }
-  try {
-    localStorage.setItem(PRESENCE_KEY, JSON.stringify(all));
-  } catch {
-    /* ignore */
-  }
-  return all;
-}
-
-export function getActiveUsers(all?: Record<string, PresenceEntry>): PresenceEntry[] {
-  const map = all ?? readPresence();
-  const now = Date.now();
-  return Object.values(map).filter((e) => now - new Date(e.lastSeen).getTime() <= ACTIVE_WINDOW_MS);
-}
-
-export function logLocalActivity(item: Omit<ActivityItem, 'id' | 'createdAt'> & { createdAt?: string }) {
-  try {
-    const raw = JSON.parse(localStorage.getItem(ACTIVITY_KEY) ?? '[]') as ActivityItem[];
-    raw.unshift({
-      id: `local-${Date.now()}-${Math.random().toString(36).slice(2)}`,
-      createdAt: item.createdAt ?? new Date().toISOString(),
-      ...item,
-    });
-    localStorage.setItem(ACTIVITY_KEY, JSON.stringify(raw.slice(0, MAX_LOCAL_ACTIVITY)));
-  } catch {
-    /* ignore */
-  }
-}
-
-export function readLocalActivity(): ActivityItem[] {
-  try {
-    return JSON.parse(localStorage.getItem(ACTIVITY_KEY) ?? '[]') as ActivityItem[];
-  } catch {
-    return [];
-  }
-}
-
-export function mergeActivity(server: ActivityItem[], emailById: Map<string, string>): ActivityItem[] {
-  const local = readLocalActivity();
-  const withEmail = server.map((a) => ({
-    ...a,
-    email: a.email ?? emailById.get(a.ownerId) ?? null,
-  }));
-  const seen = new Set(withEmail.map((a) => a.id));
-  const merged = [...withEmail];
-  for (const l of local) {
-    if (!seen.has(l.id)) merged.push(l);
-  }
-  return merged.sort((a, b) => +new Date(b.createdAt) - +new Date(a.createdAt)).slice(0, 200);
+/** Append to activity_events (owner RLS: users write their own rows). */
+export function logEvent(db: SupabaseClient, e: AuthEvent): Promise<void> {
+  return bestEffort(
+    (db.from('activity_events') as any).insert({
+      owner_id: e.ownerId,
+      event_type: e.eventType,
+      entity_type: e.entityType,
+      entity_id: e.entityId ?? null,
+      metadata: e.metadata ?? {},
+    }),
+  );
 }

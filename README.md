@@ -1,6 +1,6 @@
 # AIOps Learning Hub
 
-Personal, single-user learning dashboard for a six-month AIOps roadmap. Minimal dark UI, Supabase backend (Postgres + Auth + Storage + Realtime), static frontend on Netlify.
+Role-based learning dashboard for a six-month AIOps roadmap (user + admin panels). Minimal dark UI, Supabase backend (Postgres + Auth + Storage + Realtime), static frontend on Netlify.
 
 ## Stack
 
@@ -21,16 +21,31 @@ npm run dev
    - `supabase/migrations/0001_schema.sql`
    - `supabase/migrations/0002_rls.sql`
    - `supabase/migrations/0003_storage.sql`
-   (or `supabase db push` with the CLI).
-3. **Seed curriculum** — create owner account in the app first (Sign up), then in SQL Editor run:
+   - `supabase/migrations/0007_admin_roles.sql`
+   - `supabase/migrations/0008_admin_hardening.sql`
+   - `supabase/migrations/0009_seed_roadmap_per_owner.sql`
+   (or `supabase db push` with the CLI; 0004–0006 are curriculum upgrades, apply if present).
+3. **Seed curriculum** — each user picks tracks from the app (Dashboard or Roadmap → seed cards),
+   or in SQL Editor run:
    ```sql
-   select public.seed_roadmap(auth.uid());
+   select public.seed_roadmap(auth.uid());         -- AIOps track (6 phases / 18 skills)
+   select public.seed_onprem_roadmap(auth.uid());  -- On-Prem LLM track (2 phases / 13 skills)
    ```
-   The function upserts all 6 phases / 21 skills / ~240 topics / 6 projects idempotently; it never touches `topic_progress`.
+   Both functions upsert idempotently **per owner + track** (natural-key
+   conflicts); they never touch `topic_progress`. Safe for any number of users.
+   Tracks coexist in one account; the Roadmap/Dashboard track tabs filter between them.
 4. **Storage** — migration creates private `documents` bucket with owner-path RLS (`<uid>/…`). Uploads use short-lived signed URLs (5 min).
-5. **Auth lockdown** — after the first (owner) account exists:
-   Authentication → Sign In / Sign Ups → disable “Allow new users to sign up”.
-   Redirect URLs (Authentication → URL Configuration): add `http://localhost:5173` and your Netlify `https://…netlify.app` (+ `/**`).
+5. **Auth** — Redirect URLs (Authentication → URL Configuration): add `http://localhost:5173` and your Netlify `https://…netlify.app` (+ `/**`).
+   Supabase caps project email sending per hour — bursts of signups/resets fail with
+   “email rate limit exceeded”. For internal/team use, turn OFF “Confirm email”
+   (Authentication → Providers → Email); for production, configure a custom SMTP
+   sender there to lift the cap.
+   New signups get the `user` role automatically. Promote the first admin in SQL Editor:
+   ```sql
+   update public.profiles set role = 'admin' where email = 'you@example.com';
+   ```
+   Further role changes: Admin sidebar → User Monitoring (audited), or the same SQL as DBA.
+6. **Realtime** — Database → Replication → enable the `supabase_realtime` publication for: `topic_progress, notes, documents, study_sessions, project_milestones, daily_logs, revision_items, profiles` (`profiles` drives instant role refresh on demotion).
 6. **Realtime** — Database → Replication → enable the `supabase_realtime` publication for: `topic_progress, notes, documents, study_sessions, project_milestones, daily_logs, revision_items`.
 
 ## Netlify deploy
@@ -41,23 +56,28 @@ npm run dev
 
 ## Usage
 
+- **Dashboard** (`/dashboard`, per-user) — roadmap %, topics, skills, documents; first login seeds the personal roadmap.
 - **Roadmap (home)** — one block per skill, rope-connected; click for topics/subtopics, notes, docs.
 - **Today** — auto day plan from start date (Settings), study timer, daily log (a day completes only via “Complete day”).
 - **Documents** — drag & drop, private, preview/download/replace/delete.
 - **Projects** — milestone timelines + repo/demo links.
 - **Analytics** — completion, study time, weekly bars, streaks, revisions — all from persisted data.
 - **Settings** — start date, re-seed, password reset, logout.
+- **Admin Console** (`/admin`, admins only) — total/active/session user counts, recent registrations, uploads, completions, activity table (user, action, date, time).
+- **User Monitoring** (`/admin/users`, admins only) — searchable paginated directory, per-user skill reports + documents (signed URLs) + activity, audited role changes.
 
 ## Security model
 
 - RLS on every user table: `auth.uid() = owner_id` (SELECT/INSERT/UPDATE/DELETE incl. `WITH CHECK`).
-- Storage RLS scoped to `auth.uid()/…` paths; private bucket; signed URLs.
+- Roles are DB-backed (`profiles.role`, default `user`). `is_admin()` is `SECURITY DEFINER` (no recursive RLS); a trigger rejects non-admin role edits; app role changes go through the audited `admin_set_role()` RPC. Admins read monitoring data via RLS admin policies + the paginated `admin_user_overview()` RPC.
+- Presence (`user_presence`, 60s heartbeat): active = seen ≤5 min; tracked session = seen ≤30 min or login without later logout. Expired sessions age out.
+- Storage RLS scoped to `auth.uid()/…` paths plus an admin-read policy; private bucket; signed URLs.
 - No service-role keys in the repo or client. Inputs validated (Zod), file type/size checked, Markdown sanitized (`rehype-sanitize`), URLs validated.
 
 ## Tests
 
 ```bash
-npm test            # vitest: progress, streak, scheduling, RLS/seed guards
+npm test            # vitest: progress, streak, scheduling, RLS/seed + admin-panel guards
 npm run typecheck
 npm run build
 node scripts/verify-seed.mjs
@@ -72,6 +92,8 @@ E2E (manual checklist in `tests/`): login → seed → complete a topic → refr
 | Empty roadmap after login | Run `select seed_roadmap(auth.uid())`; check env vars |
 | Login redirect loop | Add site URL to Auth URL config |
 | Upload fails | Check `documents` bucket exists + storage policies; ≤25 MB; allowed types |
+| Delete seems to do nothing | Fixed: deletes are row-first + errors now surface in the list; refresh if stale |
+| email rate limit exceeded | Hourly Supabase email cap — wait ~1h; turn OFF “Confirm email” or set custom SMTP (step 5) |
 | Realtime not syncing | Enable replication publication (step 6); check Online badge |
 | Build fails | `npm run typecheck` first; ensure Node 20 |
 

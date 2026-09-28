@@ -20,11 +20,21 @@ export function Guard({ children }: { children: ReactNode }) {
 }
 
 export function RequireAdmin({ children }: { children: ReactNode }) {
-  const { user, loading, isAdmin } = useAuth();
-  if (loading) return <div className="min-h-screen grid place-items-center text-muted">Loading…</div>;
+  const { user, loading, roleLoading, isAdmin } = useAuth();
+  if (loading || roleLoading) return <div className="min-h-screen grid place-items-center text-muted">Loading…</div>;
   if (!user) return <Navigate to="/login" replace />;
-  if (!isAdmin) return <Navigate to="/dashboard" replace />;
+  if (!isAdmin) return <AccessDenied />;
   return <>{children}</>;
+}
+
+export function AccessDenied() {
+  return (
+    <div className="card p-6 text-center mt-6">
+      <h2 className="font-medium">Access denied</h2>
+      <p className="text-sm text-muted mt-1 mb-4">This section is for admins only.</p>
+      <a href="/dashboard" className="btn btn-primary">Back to my dashboard</a>
+    </div>
+  );
 }
 
 export const router = createBrowserRouter([
