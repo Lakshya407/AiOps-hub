@@ -1,0 +1,9 @@
+node_modules
+dist
+.git
+.gitignore
+.env
+.env.local
+C:\Users\LakshyaDeshmukh\AppData\Local\Temp\opencode
+*.log
+coverage

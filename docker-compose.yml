@@ -1,0 +1,11 @@
+# Local / single-server run. Fill in your Supabase values (or export them first).
+services:
+  web:
+    build:
+      context: .
+      args:
+        VITE_SUPABASE_URL: ${VITE_SUPABASE_URL:-https://placeholder.supabase.co}
+        VITE_SUPABASE_ANON_KEY: ${VITE_SUPABASE_ANON_KEY:-placeholder-anon-key}
+    ports:
+      - "8080:80"
+    restart: unless-stopped
