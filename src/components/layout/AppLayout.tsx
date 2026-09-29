@@ -16,9 +16,9 @@ export default function AppLayout() {
   const pmap = new Map(((progress.data as any[]) ?? []).map((p: any) => [p.topic_id, p]));
   const done = leaves.filter((t) => pmap.get(t.id)?.status === 'completed').length;
   const pct = leaves.length ? Math.round((done / leaves.length) * 100) : 0;
-  // Wide pages (notes workspace) break out of the narrow reading container.
+  // Wide pages (notes workspace, table-heavy admin panels) break out of the narrow reading container.
   const { pathname } = useLocation();
-  const wide = pathname.startsWith('/notes');
+  const wide = pathname.startsWith('/notes') || pathname.startsWith('/admin');
   return (
     <div className="min-h-screen flex">
       <Sidebar mobileOpen={open} onClose={() => setOpen(false)} collapsed={collapsed} onToggleCollapse={() => setCollapsed((v) => !v)} />

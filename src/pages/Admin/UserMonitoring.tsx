@@ -112,7 +112,7 @@ export default function UserMonitoring() {
         Search users, inspect learning progress and uploaded documents, manage roles.
       </p>
 
-      <div className="card p-4 mt-4">
+      <div className="card p-5 mt-4">
         <div className="flex items-center gap-2 mb-3">
           <input
             className="input" placeholder="Search name or email…" value={searchInput}
@@ -133,13 +133,13 @@ export default function UserMonitoring() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="text-left text-[11px] uppercase tracking-widest text-muted">
-                    <th className="py-1.5 pr-2">Name</th>
-                    <th className="py-1.5 pr-2">Email</th>
-                    <th className="py-1.5 pr-2">Role</th>
-                    <th className="py-1.5 pr-2">Created</th>
-                    <th className="py-1.5 pr-2">Last activity</th>
-                    <th className="py-1.5 pr-2">Progress</th>
-                    <th className="py-1.5">Inspect</th>
+                    <th className="py-2 pr-3">Name</th>
+                    <th className="py-2 pr-3">Email</th>
+                    <th className="py-2 pr-3">Role</th>
+                    <th className="py-2 pr-3">Created</th>
+                    <th className="py-2 pr-3">Last activity</th>
+                    <th className="py-2 pr-3">Progress</th>
+                    <th className="py-2">Inspect</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -147,13 +147,13 @@ export default function UserMonitoring() {
                     const pct = u.progressTotal ? Math.round((u.progressDone / u.progressTotal) * 100) : 0;
                     return (
                       <tr key={u.userId} className={`border-t border-border ${selectedId === u.userId ? 'bg-surface/60' : ''}`}>
-                        <td className="py-2 pr-2 max-w-[160px] truncate">{u.displayName ?? '—'}</td>
-                        <td className="py-2 pr-2 max-w-[200px] truncate">{u.email ?? '—'}</td>
-                        <td className="py-2 pr-2"><span className="badge">{u.role}</span></td>
-                        <td className="py-2 pr-2 text-muted whitespace-nowrap">{u.createdAt ? new Date(u.createdAt).toLocaleDateString() : '—'}</td>
-                        <td className="py-2 pr-2 text-muted whitespace-nowrap">{u.lastActivityAt ? new Date(u.lastActivityAt).toLocaleString() : '—'}</td>
-                        <td className="py-2 pr-2 whitespace-nowrap">{pct}% · {u.docsCount} docs</td>
-                        <td className="py-2">
+                        <td className="py-2.5 pr-3 max-w-[220px] truncate">{u.displayName ?? '—'}</td>
+                        <td className="py-2.5 pr-3 max-w-[280px] truncate">{u.email ?? '—'}</td>
+                        <td className="py-2.5 pr-3"><span className="badge">{u.role}</span></td>
+                        <td className="py-2.5 pr-3 text-muted whitespace-nowrap">{u.createdAt ? new Date(u.createdAt).toLocaleDateString() : '—'}</td>
+                        <td className="py-2.5 pr-3 text-muted whitespace-nowrap">{u.lastActivityAt ? new Date(u.lastActivityAt).toLocaleString() : '—'}</td>
+                        <td className="py-2.5 pr-3 whitespace-nowrap">{pct}% · {u.docsCount} docs</td>
+                        <td className="py-2.5">
                           <button className="btn !py-1.5 text-xs whitespace-nowrap" onClick={() => select(u.userId)}>
                             {selectedId === u.userId ? 'Reload' : 'View'}
                           </button>
@@ -174,12 +174,12 @@ export default function UserMonitoring() {
       </div>
 
       {selected && (
-        <div className="card p-4 mt-3">
-          <div className="text-sm font-medium">
+        <div className="card p-5 mt-4">
+          <div className="text-[15px] font-medium">
             {displayNameOf({ display_name: selected.displayName, email: selected.email, id: selected.userId })}
             <span className="badge ml-2">{selected.role}</span>
           </div>
-          <div className="text-xs text-muted mt-0.5">{selected.email ?? '—'}</div>
+          <div className="text-[13px] text-muted mt-0.5">{selected.email ?? '—'}</div>
           {detailBusy && <p className="text-sm text-muted mt-2">Loading report…</p>}
           {detail && detail.restricted && (
             <p className="text-xs text-muted mt-2 leading-relaxed">{detail.note}</p>
@@ -187,8 +187,8 @@ export default function UserMonitoring() {
           {detail && !detail.restricted && (
             <div className="mt-3 space-y-4">
               <div>
-                <div className="text-xs font-medium mb-1">Account & role (admin only)</div>
-                <div className="text-xs text-muted">
+                <div className="text-[13px] font-medium mb-1.5">Account & role (admin only)</div>
+                <div className="text-[13px] text-muted">
                   Created {detail.profile?.createdAt ? fmtDateTime(detail.profile.createdAt) : '—'}
                   {detail.presence?.last_login_at ? ` · Last login ${fmtDateTime(detail.presence.last_login_at)}` : ''}
                 </div>
@@ -220,16 +220,16 @@ export default function UserMonitoring() {
               </div>
 
               <div>
-                <div className="text-xs font-medium mb-1">
+                <div className="text-[13px] font-medium mb-1.5">
                   Roadmap progress — {detail.overallPercent}% overall · {detail.skillsCompleted}/{detail.skillsTotal} skills completed
                 </div>
                 {detail.skillReports.length === 0 ? (
                   <p className="text-xs text-muted">No roadmap seeded for this user yet.</p>
                 ) : (
-                  <div className="space-y-1.5 max-h-64 overflow-y-auto">
+                  <div className="space-y-2 max-h-80 overflow-y-auto">
                     {detail.skillReports.map((s) => (
-                      <div key={s.skillId} className="flex items-center gap-2 text-xs">
-                        <span className="w-40 truncate text-muted">{s.title}</span>
+                      <div key={s.skillId} className="flex items-center gap-2.5 text-[13px]">
+                        <span className="w-56 truncate text-muted">{s.title}</span>
                         <div className="flex-1 h-1.5 bg-border/70 rounded-full overflow-hidden">
                           <div className="h-full bg-accent" style={{ width: `${s.percent}%` }} />
                         </div>
@@ -242,13 +242,13 @@ export default function UserMonitoring() {
               </div>
 
               <div>
-                <div className="text-xs font-medium mb-1">Uploaded documents ({detail.docs.length})</div>
+                <div className="text-[13px] font-medium mb-1.5">Uploaded documents ({detail.docs.length})</div>
                 {detail.docs.length === 0 ? (
                   <p className="text-xs text-muted">No uploads.</p>
                 ) : (
-                  <ul className="space-y-1 max-h-48 overflow-y-auto">
+                  <ul className="space-y-1.5 max-h-64 overflow-y-auto">
                     {detail.docs.map((d) => (
-                      <li key={d.id} className="text-xs flex items-center gap-2">
+                      <li key={d.id} className="text-[13px] flex items-center gap-2">
                         <span className="flex-1 truncate">{d.title}</span>
                         <span className="text-muted whitespace-nowrap">{d.mime_type || 'file'} · {fmtBytes(d.size_bytes)}</span>
                         <span className="text-muted whitespace-nowrap">{new Date(d.created_at).toLocaleDateString()}</span>
@@ -267,13 +267,13 @@ export default function UserMonitoring() {
               </div>
 
               <div>
-                <div className="text-xs font-medium mb-1">Recent activity ({detail.activity.length})</div>
+                <div className="text-[13px] font-medium mb-1.5">Recent activity ({detail.activity.length})</div>
                 {detail.activity.length === 0 ? (
                   <p className="text-xs text-muted">No activity recorded.</p>
                 ) : (
-                  <ol className="space-y-1 max-h-48 overflow-y-auto">
+                  <ol className="space-y-1.5 max-h-64 overflow-y-auto">
                     {detail.activity.slice(0, 30).map((a) => (
-                      <li key={a.id} className="text-xs flex items-center gap-2">
+                      <li key={a.id} className="text-[13px] flex items-center gap-2">
                         <span className="text-muted whitespace-nowrap">{fmtDateTime(a.createdAt)}</span>
                         <span className="badge !py-0.5">{a.eventType.replace(/_/g, ' ')}</span>
                       </li>

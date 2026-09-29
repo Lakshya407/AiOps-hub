@@ -76,16 +76,16 @@ export default function AdminConsole() {
 
       {!loading && !error && counts && (
         <>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-4">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4">
             {[
               ['Total registered users', String(counts.totalUsers)],
               ['Active now (5 min)', String(counts.activeUsers)],
               ['Tracked sessions', String(counts.trackedSessions)],
               ['New this week', String(counts.newThisWeek)],
             ].map(([k, v]) => (
-              <div key={k} className="card p-3.5">
-                <div className="text-[11px] text-muted">{k}</div>
-                <div className="text-lg font-semibold">{v}</div>
+              <div key={k} className="card p-4">
+                <div className="text-xs text-muted">{k}</div>
+                <div className="text-xl font-semibold mt-0.5">{v}</div>
               </div>
             ))}
           </div>
@@ -95,15 +95,15 @@ export default function AdminConsole() {
             out automatically; raw Supabase Auth sessions are not enumerated.
           </p>
 
-          <div className="grid sm:grid-cols-3 gap-3 mt-3">
-            <div className="card p-4">
-              <div className="text-sm font-medium mb-2">Recent registrations</div>
+          <div className="grid sm:grid-cols-3 gap-4 mt-4">
+            <div className="card p-5">
+              <div className="text-[15px] font-medium mb-2.5">Recent registrations</div>
               {regs.length === 0 ? (
                 <p className="text-xs text-muted">No registrations yet.</p>
               ) : (
-                <ul className="space-y-1.5">
+                <ul className="space-y-2">
                   {regs.map((r) => (
-                    <li key={r.id} className="text-xs flex items-center gap-2">
+                    <li key={r.id} className="text-[13px] flex items-center gap-2">
                       <span className="flex-1 truncate">{displayNameOf(r)}</span>
                       <span className="text-muted whitespace-nowrap">{fmtDate(r.created_at)}</span>
                     </li>
@@ -111,14 +111,14 @@ export default function AdminConsole() {
                 </ul>
               )}
             </div>
-            <div className="card p-4">
-              <div className="text-sm font-medium mb-2">Recent document uploads</div>
+            <div className="card p-5">
+              <div className="text-[15px] font-medium mb-2.5">Recent document uploads</div>
               {uploads.length === 0 ? (
                 <p className="text-xs text-muted">No uploads yet.</p>
               ) : (
-                <ul className="space-y-1.5">
+                <ul className="space-y-2">
                   {uploads.map((d) => (
-                    <li key={d.id} className="text-xs">
+                    <li key={d.id} className="text-[13px]">
                       <div className="truncate">{d.title}</div>
                       <div className="text-muted">{d.email ?? '—'} · {fmtDate(d.created_at)}</div>
                     </li>
@@ -126,14 +126,14 @@ export default function AdminConsole() {
                 </ul>
               )}
             </div>
-            <div className="card p-4">
-              <div className="text-sm font-medium mb-2">Recent skill completions</div>
+            <div className="card p-5">
+              <div className="text-[15px] font-medium mb-2.5">Recent skill completions</div>
               {completions.length === 0 ? (
                 <p className="text-xs text-muted">No completions yet.</p>
               ) : (
-                <ul className="space-y-1.5">
+                <ul className="space-y-2">
                   {completions.map((c, i) => (
-                    <li key={`${c.topic_id}-${c.owner_id}-${i}`} className="text-xs">
+                    <li key={`${c.topic_id}-${c.owner_id}-${i}`} className="text-[13px]">
                       <div className="truncate">Topic completed</div>
                       <div className="text-muted">{c.email ?? '—'} · {fmtDate(c.completed_at ?? c.updated_at)}</div>
                     </li>
@@ -143,8 +143,8 @@ export default function AdminConsole() {
             </div>
           </div>
 
-          <div className="card p-4 mt-3">
-            <div className="text-sm font-medium mb-2">Recent activity</div>
+          <div className="card p-5 mt-4">
+            <div className="text-[15px] font-medium mb-2.5">Recent activity</div>
             {activity.length === 0 ? (
               <p className="text-sm text-muted">No activity yet. Sign-ins, completions and admin changes appear here.</p>
             ) : (
@@ -152,19 +152,19 @@ export default function AdminConsole() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="text-left text-[11px] uppercase tracking-widest text-muted">
-                      <th className="py-1.5 pr-3">User</th>
-                      <th className="py-1.5 pr-3">Action</th>
-                      <th className="py-1.5 pr-3">Date</th>
-                      <th className="py-1.5">Time</th>
+                      <th className="py-2 pr-4">User</th>
+                      <th className="py-2 pr-4">Action</th>
+                      <th className="py-2 pr-4">Date</th>
+                      <th className="py-2">Time</th>
                     </tr>
                   </thead>
                   <tbody>
                     {activity.map((a) => (
                       <tr key={a.id} className="border-t border-border">
-                        <td className="py-1.5 pr-3 max-w-[220px] truncate">{a.displayName ?? a.email ?? a.ownerId.slice(0, 8)}</td>
-                        <td className="py-1.5 pr-3"><span className="badge !py-0.5">{friendlyAction(a.eventType)}</span></td>
-                        <td className="py-1.5 pr-3 text-muted whitespace-nowrap">{fmtDate(a.createdAt)}</td>
-                        <td className="py-1.5 text-muted whitespace-nowrap">{fmtTime(a.createdAt)}</td>
+                        <td className="py-2 pr-4 max-w-[320px] truncate">{a.displayName ?? a.email ?? a.ownerId.slice(0, 8)}</td>
+                        <td className="py-2 pr-4"><span className="badge !py-0.5">{friendlyAction(a.eventType)}</span></td>
+                        <td className="py-2 pr-4 text-muted whitespace-nowrap">{fmtDate(a.createdAt)}</td>
+                        <td className="py-2 text-muted whitespace-nowrap">{fmtTime(a.createdAt)}</td>
                       </tr>
                     ))}
                   </tbody>
