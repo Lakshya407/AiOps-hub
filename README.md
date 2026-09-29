@@ -25,6 +25,7 @@ npm run dev
    - `supabase/migrations/0008_admin_hardening.sql`
    - `supabase/migrations/0009_seed_roadmap_per_owner.sql`
    - `supabase/migrations/0011_notes_obsidian.sql` (notes: roadmap link + pinning + indexes; safe rerun)
+   - `supabase/migrations/0012_note_images_storage.sql` (public `note_images` bucket for pasted note images; owner-scoped writes, safe rerun)
    (or `supabase db push` with the CLI; 0004–0006 are curriculum upgrades, apply if present).
 3. **Seed curriculum** — each user picks tracks from the app (Dashboard or Roadmap → seed cards),
    or in SQL Editor run:
@@ -69,14 +70,15 @@ npm run dev
 
 ## Notes + Obsidian
 
-- **Notes** (`/notes`) — Obsidian-style two-panel workspace: searchable list grouped by roadmap/skill/topic (left), Markdown editor with Edit / Preview / Split modes (right). Toolbar for headings, bold, italic, lists, checklists, quotes, code, links, tables. Autosaves ~1s after typing with Saving / Saved / Save-failed + retry (unsaved edits are preserved). Create, rename (click title), delete (confirmed), search, pin, duplicate. Word count + last-edited timestamp. Markdown is rendered with GFM + `rehype-sanitize`; `javascript:`/`data:` links are blocked.
+- **Notes** (`/notes`) — Obsidian-style two-panel workspace: searchable list grouped by roadmap/skill/topic (left), Markdown editor with Edit / Preview / Split modes (right). Toolbar for headings, bold, italic, lists, checklists, quotes, code, links, tables, image attach. Autosaves ~1s after typing with Saving / Saved / Save-failed + retry (unsaved edits are preserved). Create, rename (click title), delete (confirmed), search, pin, duplicate. Word count + last-edited timestamp. Markdown is rendered with GFM + `rehype-sanitize`; `javascript:`/`data:` links are blocked.
+- **Note images** — paste screenshots with Ctrl+V / Cmd+V, drag & drop, or use the toolbar image button. PNG/JPG/GIF/WebP up to 5 MB each (5 per paste). Files upload to the `note_images` storage bucket and insert as standard `![alt](url)` Markdown at the cursor, with an Uploading indicator in the status bar. Image links keep working in previews, after refresh, and in Obsidian exports.
 - **Roadmap linkage** — each skill page has a Notes tab (notes for that skill, create-note, last-edited date, link to the full workspace); every topic row has a quick Note button + open link. Creating a note never marks a topic complete.
 - **Obsidian setup** — Settings → Obsidian integration: enable, set your local vault name (must already exist in Obsidian), optional base folder (default `LearnHub`). Requires Obsidian installed on the same device. There is **no two-way sync**.
   - **Export .md** — downloads UTF-8 Markdown with YAML frontmatter (`title`, `roadmap`, `skill`, `topic`, `exported`); content is unchanged; filenames are sanitized.
   - **Open in Obsidian** — opens the existing vault file via `obsidian://open` (warns if you have unsaved browser edits; never overwrites).
   - **Send to Obsidian** — creates a new vault note via `obsidian://new`; long notes exceed URI limits and should be exported as a file instead.
   - **Import** — upload a `.md` file (≤512 KB, UTF-8); preview before importing as an independent note or into the current topic; existing notes are never overwritten.
-- **Database** — apply `supabase/migrations/0011_notes_obsidian.sql` once (adds `notes.roadmap_id`, `notes.is_pinned`, indexes; re-asserts owner-only RLS). No new env vars; no service-role keys.
+- **Database** — apply `supabase/migrations/0011_notes_obsidian.sql` once (adds `notes.roadmap_id`, `notes.is_pinned`, indexes; re-asserts owner-only RLS) and `supabase/migrations/0012_note_images_storage.sql` once (creates the public `note_images` bucket for pasted images; writes stay owner-scoped). Note: image URLs are public-but-unguessable (random UUID paths) so they survive in previews and Obsidian exports — don't paste secrets as images. No new env vars; no service-role keys.
 
 ## Security model
 

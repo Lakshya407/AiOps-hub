@@ -22,6 +22,11 @@ export default function MarkdownView({ content }: { content: string }) {
               {children}
             </a>
           ),
+          img: (props: any) => {
+            const src = props?.src;
+            if (typeof src !== 'string' || !src || src === '#blocked') return null;
+            return <img src={src} alt={props?.alt ?? ''} title={props?.title} loading="lazy" className="rounded-xl border border-border max-w-full my-3" />;
+          },
           code: ({ className, children }: any) => (
             <code className={`rounded bg-surface2 border border-border px-1.5 py-0.5 text-[13px] font-mono ${className ?? ''}`}>{children}</code>
           ),

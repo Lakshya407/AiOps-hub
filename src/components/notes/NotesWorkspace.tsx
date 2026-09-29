@@ -1,13 +1,14 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type ClipboardEvent as ReactClipboardEvent, type DragEvent as ReactDragEvent } from 'react';
 import {
   ArrowLeft, Bold, Check, Code2, Copy, Download, ExternalLink, Eye, Heading1, Heading2,
-  Italic, Link2, List, ListChecks, ListOrdered, Pin, PinOff, Plus, Quote,
+  ImagePlus, Italic, Link2, List, ListChecks, ListOrdered, Pin, PinOff, Plus, Quote,
   Search, SplitSquareHorizontal, Pencil, Table2, Trash2, Upload, X,
 } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import MarkdownView from './MarkdownView';
 import { useDeleteNote, useDuplicateNote, useNotesList, useTogglePin, NOTES_KEY } from '@/hooks/useNotes';
 import { createNote, updateNote } from '@/services/notes';
+import { MAX_PER_PASTE, buildImageMarkdown, imageAltFromFile, uploadNoteImage, validateImageFile } from '@/services/noteImages';
 import {
   IMPORT_MAX_BYTES, buildMarkdownFile, buildObsidianNewUri, buildObsidianOpenUri,
   countWords, isUriTooLong, loadObsidianSettings, noteFilePath,
@@ -55,7 +56,9 @@ export default function NotesWorkspace({ topics = [], skills = [], phases = [], 
   const [importText, setImportText] = useState('');
   const [importTitle, setImportTitle] = useState('');
   const [importErr, setImportErr] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(0);
   const fileRef = useRef<HTMLInputElement>(null);
+  const imageRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
@@ -224,7 +227,77 @@ export default function NotesWorkspace({ topics = [], skills = [], phases = [], 
     { icon: Code2, label: 'Code block', fn: () => insertAtCursor('\n```\n', '\n```\n', 'code') },
     { icon: Link2, label: 'Link', fn: () => insertAtCursor('[', '](https://)', 'text') },
     { icon: Table2, label: 'Table', fn: () => insertAtCursor('\n| Col A | Col B |\n| --- | --- |\n| ', ' |  |\n', 'a') },
+    { icon: ImagePlus, label: 'Attach image (or paste with Ctrl+V)', fn: () => imageRef.current?.click() },
   ];
+
+  // ---- Image paste / drop / attach ----
+  const imagesFromClipboard = (e: ReactClipboardEvent<HTMLTextAreaElement>): File[] => {
+    const out: File[] = [];
+    const items = e.clipboardData?.items;
+    if (items) {
+      for (const it of Array.from(items)) {
+        if (it.type.startsWith('image/')) {
+          const f = it.getAsFile();
+          if (f) out.push(f);
+        }
+      }
+    }
+    if (!out.length && e.clipboardData?.files?.length) {
+      for (const f of Array.from(e.clipboardData.files)) {
+        if (f.type.startsWith('image/')) out.push(f);
+      }
+    }
+    return out;
+  };
+
+  /** Upload images and insert `![alt](url)` at the cursor. Returns true if it handled the event. */
+  const uploadAndInsertImages = async (files: File[] | FileList): Promise<boolean> => {
+    const list = Array.from(files).filter((f) => f.type.startsWith('image/'));
+    if (!list.length) return false;
+    if (!selected) { setError('Create or select a note first, then paste images.'); return true; }
+    const targetId = selected.id;
+    const batch = list.slice(0, MAX_PER_PASTE);
+    if (list.length > batch.length) setNotice(`Only the first ${batch.length} images were attached (${MAX_PER_PASTE} per paste).`);
+    setUploading((n) => n + batch.length);
+    for (const f of batch) {
+      const err = validateImageFile(f);
+      if (err) { setUploading((n) => n - 1); setError(err); continue; }
+      const alt = imageAltFromFile(f);
+      const placeholder = `![Uploading ${alt}…]()`;
+      insertAtCursor(placeholder + '\n', '', '');
+      try {
+        const url = await uploadNoteImage(f, targetId);
+        if (hydratedFor.current === targetId) {
+          const done = buildImageMarkdown(alt, url);
+          setContent((c) => (c.includes(placeholder) ? c.replace(placeholder, done) : `${c.replace(/\s+$/, '')}\n\n${done}\n`));
+        } else {
+          // User switched notes mid-upload: don't lose the URL.
+          setNotice(`Image uploaded, but you had switched notes — its link: ${url}`);
+        }
+        void qc.invalidateQueries({ queryKey: NOTES_KEY });
+      } catch (e: any) {
+        if (hydratedFor.current === targetId) setContent((c) => c.replace(placeholder, ''));
+        setError(e?.message ?? 'Image upload failed. The placeholder was removed.');
+      } finally {
+        setUploading((n) => n - 1);
+      }
+    }
+    return true;
+  };
+
+  const onEditorPaste = (e: ReactClipboardEvent<HTMLTextAreaElement>) => {
+    const imgs = imagesFromClipboard(e);
+    if (!imgs.length) return; // plain text: let the default paste through
+    e.preventDefault();
+    void uploadAndInsertImages(imgs);
+  };
+
+  const onEditorDrop = (e: ReactDragEvent<HTMLTextAreaElement>) => {
+    const imgs = Array.from(e.dataTransfer?.files ?? []).filter((f) => f.type.startsWith('image/'));
+    if (!imgs.length) return;
+    e.preventDefault();
+    void uploadAndInsertImages(imgs);
+  };
 
   // ---- Obsidian actions ----
   const obsidianNoteNames = (n: Note) => ({
@@ -419,22 +492,31 @@ export default function NotesWorkspace({ topics = [], skills = [], phases = [], 
 
             {/* formatting toolbar */}
             {(mode === 'edit' || mode === 'split') && (
-              <div className="flex flex-wrap gap-1 mt-2.5" aria-label="Formatting toolbar">
+              <div className="flex flex-wrap items-center gap-1 mt-2.5" aria-label="Formatting toolbar">
                 {toolbar.map(({ icon: Icon, label, fn }) => (
                   <button key={label} title={label} aria-label={label} onClick={fn} className="btn !px-2 !py-1.5"><Icon size={14} /></button>
                 ))}
+                <span className="text-[11px] text-muted ml-auto hidden lg:inline">Tip: paste screenshots with Ctrl+V, or drag &amp; drop images</span>
               </div>
             )}
 
+            <input
+              ref={imageRef} type="file" accept="image/png,image/jpeg,image/gif,image/webp" multiple className="hidden"
+              aria-label="Attach images"
+              onChange={(e) => { void uploadAndInsertImages(e.target.files ?? []); if (imageRef.current) imageRef.current.value = ''; }}
+            />
             <div className={`grid gap-4 mt-3 ${mode === 'split' ? 'xl:grid-cols-2' : ''}`}>
               {(mode === 'edit' || mode === 'split') && (
                 <textarea
                   ref={textareaRef}
                   aria-label="Markdown editor"
                   className="input min-h-[480px] xl:min-h-[600px] font-mono !text-sm !leading-[1.8] !p-4 resize-y"
-                  placeholder={'# Heading\n\nWrite Markdown… **bold**, *italic*, - lists, - [ ] tasks, > quotes, tables, `code`.'}
+                  placeholder={'# Heading\n\nWrite Markdown… **bold**, *italic*, - lists, - [ ] tasks, > quotes, tables, `code`.\n\nPaste screenshots (Ctrl+V) or drag & drop images to attach them.'}
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
+                  onPaste={onEditorPaste}
+                  onDrop={onEditorDrop}
+                  onDragOver={(e) => e.preventDefault()}
                 />
               )}
               {(mode === 'preview' || mode === 'split') && (
@@ -455,6 +537,12 @@ export default function NotesWorkspace({ topics = [], skills = [], phases = [], 
               </span>
               <span aria-hidden>·</span>
               <span>{countWords(content)} words</span>
+              {uploading > 0 && (
+                <span className="inline-flex items-center gap-1.5 text-text">
+                  <span className="w-2 h-2 rounded-full bg-text animate-pulse" />
+                  Uploading {uploading} image{uploading === 1 ? '' : 's'}…
+                </span>
+              )}
               {saveState === 'error' && (
                 <button className="btn !py-1 !px-2 !text-[11px]" onClick={retrySave}>Retry save</button>
               )}
