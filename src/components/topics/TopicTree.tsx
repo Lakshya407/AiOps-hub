@@ -2,11 +2,12 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Check } from 'lucide-react';
 import { setTopicStatus } from '@/services/roadmap';
 import type { Topic, TopicProgress, TopicStatus } from '@/types';
+import TopicNotes from '@/components/notes/TopicNotes';
 
 const order: TopicStatus[] = ['not_started', 'in_progress', 'completed', 'needs_revision'];
 const label: Record<TopicStatus, string> = { not_started: 'Not started', in_progress: 'In progress', completed: 'Completed', needs_revision: 'Needs revision' };
 
-export default function TopicTree({ topics, progressMap }: { topics: Topic[]; progressMap: Map<string, TopicProgress> }) {
+export default function TopicTree({ topics, progressMap, skillId, withNotes }: { topics: Topic[]; progressMap: Map<string, TopicProgress>; skillId?: string; withNotes?: boolean }) {
   const qc = useQueryClient();
   const mut = useMutation({
     mutationFn: ({ id, status }: { id: string; status: TopicStatus }) => setTopicStatus(id, status),
@@ -36,6 +37,7 @@ export default function TopicTree({ topics, progressMap }: { topics: Topic[]; pr
               <span className="badge">{label[st]}</span>
               {t.estimated_minutes > 0 && <span className="text-[11px] text-muted">{t.estimated_minutes}m</span>}
             </div>
+            {withNotes && skillId && <TopicNotes topicId={t.id} skillId={t.skill_id || skillId} topicTitle={t.title} />}
           </div>
         </div>
         {kids(t.id).map((k) => row(k, depth + 1))}

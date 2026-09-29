@@ -13,5 +13,14 @@ a { @apply text-text; }
 .label { @apply text-xs text-muted mb-1 block; }
 .badge { @apply text-[11px] px-2 py-0.5 rounded-full border border-border text-muted; }
 .rope { background-image: linear-gradient(to bottom, #3a3a41 60%, transparent 40%); background-size: 2px 10px; background-repeat: repeat-y; background-position: center; }
+/* Obsidian-style markdown preview */
+.md-preview { @apply text-[15px] leading-[1.85] text-text/90; }
+.md-preview > *:first-child { margin-top: 0; }
+.md-preview p { @apply my-3; }
+.md-preview h1, .md-preview h2, .md-preview h3 { @apply mb-1.5; }
+.md-preview ul, .md-preview ol { @apply my-2.5; }
+.md-preview pre { @apply my-3; }
+.md-preview pre code { @apply bg-transparent border-0 p-0; }
+.md-preview table { @apply my-3; }
 ::-webkit-scrollbar { width: 10px; height: 10px; }
 ::-webkit-scrollbar-thumb { background: #2c2c33; border-radius: 8px; }

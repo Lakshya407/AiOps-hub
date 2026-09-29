@@ -1,10 +1,11 @@
 import { NavLink } from 'react-router-dom';
-import { Map, Files, FolderKanban, Settings, X, PanelLeftClose, PanelLeftOpen, LayoutDashboard, ShieldCheck, Users } from 'lucide-react';
+import { Map, Files, FolderKanban, Settings, X, PanelLeftClose, PanelLeftOpen, LayoutDashboard, ShieldCheck, Users, NotebookPen } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 
 const userItems = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, end: true },
   { to: '/', label: 'Roadmap', icon: Map, end: true },
+  { to: '/notes', label: 'Notes', icon: NotebookPen, end: false },
   { to: '/documents', label: 'Documents', icon: Files, end: false },
   { to: '/projects', label: 'Projects', icon: FolderKanban, end: false },
   { to: '/settings', label: 'Settings', icon: Settings, end: false },

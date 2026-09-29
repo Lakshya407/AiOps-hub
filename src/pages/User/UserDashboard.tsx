@@ -114,6 +114,7 @@ export default function UserDashboard() {
 
       <div className="card p-4 mt-3 flex flex-wrap gap-2">
         <button className="btn btn-primary" onClick={() => nav('/')}>Open seed roadmap</button>
+        <button className="btn" onClick={() => nav('/notes')}>My notes</button>
         <button className="btn" onClick={() => nav('/documents')}>My documents</button>
         <button className="btn" onClick={() => nav('/projects')}>My projects</button>
         <button className="btn" onClick={() => nav('/settings')}>Settings</button>

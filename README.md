@@ -24,6 +24,7 @@ npm run dev
    - `supabase/migrations/0007_admin_roles.sql`
    - `supabase/migrations/0008_admin_hardening.sql`
    - `supabase/migrations/0009_seed_roadmap_per_owner.sql`
+   - `supabase/migrations/0011_notes_obsidian.sql` (notes: roadmap link + pinning + indexes; safe rerun)
    (or `supabase db push` with the CLI; 0004–0006 are curriculum upgrades, apply if present).
 3. **Seed curriculum** — each user picks tracks from the app (Dashboard or Roadmap → seed cards),
    or in SQL Editor run:
@@ -62,9 +63,20 @@ npm run dev
 - **Documents** — drag & drop, private, preview/download/replace/delete.
 - **Projects** — milestone timelines + repo/demo links.
 - **Analytics** — completion, study time, weekly bars, streaks, revisions — all from persisted data.
-- **Settings** — start date, re-seed, password reset, logout.
+- **Settings** — start date, re-seed, password reset, Obsidian vault config, logout.
 - **Admin Console** (`/admin`, admins only) — total/active/session user counts, recent registrations, uploads, completions, activity table (user, action, date, time).
 - **User Monitoring** (`/admin/users`, admins only) — searchable paginated directory, per-user skill reports + documents (signed URLs) + activity, audited role changes.
+
+## Notes + Obsidian
+
+- **Notes** (`/notes`) — Obsidian-style two-panel workspace: searchable list grouped by roadmap/skill/topic (left), Markdown editor with Edit / Preview / Split modes (right). Toolbar for headings, bold, italic, lists, checklists, quotes, code, links, tables. Autosaves ~1s after typing with Saving / Saved / Save-failed + retry (unsaved edits are preserved). Create, rename (click title), delete (confirmed), search, pin, duplicate. Word count + last-edited timestamp. Markdown is rendered with GFM + `rehype-sanitize`; `javascript:`/`data:` links are blocked.
+- **Roadmap linkage** — each skill page has a Notes tab (notes for that skill, create-note, last-edited date, link to the full workspace); every topic row has a quick Note button + open link. Creating a note never marks a topic complete.
+- **Obsidian setup** — Settings → Obsidian integration: enable, set your local vault name (must already exist in Obsidian), optional base folder (default `LearnHub`). Requires Obsidian installed on the same device. There is **no two-way sync**.
+  - **Export .md** — downloads UTF-8 Markdown with YAML frontmatter (`title`, `roadmap`, `skill`, `topic`, `exported`); content is unchanged; filenames are sanitized.
+  - **Open in Obsidian** — opens the existing vault file via `obsidian://open` (warns if you have unsaved browser edits; never overwrites).
+  - **Send to Obsidian** — creates a new vault note via `obsidian://new`; long notes exceed URI limits and should be exported as a file instead.
+  - **Import** — upload a `.md` file (≤512 KB, UTF-8); preview before importing as an independent note or into the current topic; existing notes are never overwritten.
+- **Database** — apply `supabase/migrations/0011_notes_obsidian.sql` once (adds `notes.roadmap_id`, `notes.is_pinned`, indexes; re-asserts owner-only RLS). No new env vars; no service-role keys.
 
 ## Security model
 
@@ -77,7 +89,7 @@ npm run dev
 ## Tests
 
 ```bash
-npm test            # vitest: progress, streak, scheduling, RLS/seed + admin-panel guards
+npm test            # vitest: progress, streak, scheduling, RLS/seed + admin-panel guards + notes/obsidian
 npm run typecheck
 npm run build
 node scripts/verify-seed.mjs

@@ -4,6 +4,7 @@ import Login from '@/pages/Login/Login';
 import Roadmap from '@/pages/Roadmap/Roadmap';
 import SkillDetails from '@/pages/SkillDetails/SkillDetails';
 import Documents from '@/pages/Documents/Documents';
+import Notes from '@/pages/Notes/Notes';
 import Projects from '@/pages/Projects/Projects';
 import Settings from '@/pages/Settings/Settings';
 import UserDashboard from '@/pages/User/UserDashboard';
@@ -46,6 +47,7 @@ export const router = createBrowserRouter([
       { path: 'dashboard', element: <UserDashboard /> },
       { path: 'skill/:id', element: <SkillDetails /> },
       { path: 'documents', element: <Documents /> },
+      { path: 'notes', element: <Notes /> },
       { path: 'projects', element: <Projects /> },
       { path: 'settings', element: <Settings /> },
       { path: 'admin', element: <RequireAdmin><AdminConsole /></RequireAdmin> },

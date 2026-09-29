@@ -8,7 +8,8 @@ export interface TopicProgress { id: string; owner_id: string; topic_id: string;
 export interface StudySession { id: string; owner_id: string; topic_id: string | null; started_at: string; ended_at: string | null; duration_minutes: number; notes: string; }
 export interface DailyLog { id: string; owner_id: string; log_date: string; summary: string; challenges: string; next_steps: string; mood?: string | null; completed: boolean; }
 export interface DocRow { id: string; owner_id: string; skill_id: string | null; topic_id: string | null; project_id: string | null; title: string; description: string; file_path: string; mime_type: string; size_bytes: number; tags: string[]; created_at: string; updated_at: string; }
-export interface Note { id: string; owner_id: string; skill_id: string | null; topic_id: string | null; title: string; content_markdown: string; tags: string[]; created_at: string; updated_at: string; }
+export interface Note { id: string; owner_id: string; roadmap_id: string | null; skill_id: string | null; topic_id: string | null; title: string; content_markdown: string; tags: string[]; is_pinned: boolean; created_at: string; updated_at: string; }
+export interface ObsidianSettings { enabled: boolean; vault: string; baseFolder: string; }
 export interface Resource { id: string; owner_id: string; topic_id: string | null; title: string; url: string; resource_type: string; notes: string; }
 export interface Project { id: string; owner_id: string; title: string; description: string; status: ProjectStatus; repository_url: string; demo_url: string; month_number: number | null; started_at: string | null; completed_at: string | null; skill_ids: string[]; }
 export interface Milestone { id: string; project_id: string; owner_id: string; title: string; description: string; status: ProjectStatus; sort_order: number; }

@@ -1,4 +1,4 @@
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Header from './Header';
 import { useRealtimeSync } from '@/hooks/useRealtime';
@@ -16,12 +16,15 @@ export default function AppLayout() {
   const pmap = new Map(((progress.data as any[]) ?? []).map((p: any) => [p.topic_id, p]));
   const done = leaves.filter((t) => pmap.get(t.id)?.status === 'completed').length;
   const pct = leaves.length ? Math.round((done / leaves.length) * 100) : 0;
+  // Wide pages (notes workspace) break out of the narrow reading container.
+  const { pathname } = useLocation();
+  const wide = pathname.startsWith('/notes');
   return (
     <div className="min-h-screen flex">
       <Sidebar mobileOpen={open} onClose={() => setOpen(false)} collapsed={collapsed} onToggleCollapse={() => setCollapsed((v) => !v)} />
       <div className="flex-1 min-w-0">
         <Header percent={pct} onMenu={() => setOpen(true)} />
-        <main className="max-w-4xl mx-auto px-4 sm:px-6 pb-20 pt-6">
+        <main className={`${wide ? 'max-w-[1500px]' : 'max-w-4xl'} mx-auto px-4 sm:px-6 pb-20 pt-6`}>
           <Outlet />
         </main>
       </div>
