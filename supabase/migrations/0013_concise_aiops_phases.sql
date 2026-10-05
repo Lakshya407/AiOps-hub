@@ -1,3 +1,54 @@
+-- 0013_concise_aiops_phases.sql — Condense AIOps 6-month roadmap into 2 phases.
+-- Phase 1 = old months 1+2+3 (Foundations, Cloud & DevOps, 10 skills)
+-- Phase 2 = old months 4+5+6 (Observability, AI & AIOps, 8 skills)
+-- Safe to rerun. Only touches track='aiops'. Never touches progress/topics.
+-- After data merge, redefines seed_roadmap() to the 2-phase version
+-- (body mirrors supabase/seed/seed.sql).
+
+-- 1) Refresh Phase 1 / Phase 2 titles for all existing owners ---------------
+update public.roadmap_phases
+set title = 'Phase 1 - Months 1-3 - Foundations, Cloud & DevOps',
+    description = 'Linux, networking, Python, Git, Docker, Kubernetes, AWS, Terraform and CI/CD.',
+    sort_order = 1
+where track = 'aiops' and month_number = 1;
+
+update public.roadmap_phases
+set title = 'Phase 2 - Months 4-6 - Observability, AI & AIOps',
+    description = 'ArgoCD, Prometheus, Grafana, Elastic, OpenTelemetry, LLMs, Agentic AI and AIOps productionization.',
+    sort_order = 2
+where track = 'aiops' and month_number = 2;
+
+-- 2) Repoint old Month 2+3 skills -> Phase 1 (month_number=1) ----------------
+update public.skills s
+set phase_id = p1.id
+from public.roadmap_phases p_old
+join public.roadmap_phases p1
+  on p1.owner_id = p_old.owner_id
+ and p1.track = 'aiops' and p1.month_number = 1
+where s.phase_id = p_old.id
+  and s.track = 'aiops'
+  and p_old.track = 'aiops'
+  and p_old.month_number in (2, 3)
+  and p_old.owner_id = s.owner_id;
+
+-- 3) Repoint old Month 4+5+6 skills -> Phase 2 (month_number=2) --------------
+update public.skills s
+set phase_id = p2.id
+from public.roadmap_phases p_old
+join public.roadmap_phases p2
+  on p2.owner_id = p_old.owner_id
+ and p2.track = 'aiops' and p2.month_number = 2
+where s.phase_id = p_old.id
+  and s.track = 'aiops'
+  and p_old.track = 'aiops'
+  and p_old.month_number in (4, 5, 6)
+  and p_old.owner_id = s.owner_id;
+
+-- 4) Drop old Month 3-6 phase rows (skills already moved) -------------------
+delete from public.roadmap_phases
+where track = 'aiops' and month_number in (3, 4, 5, 6);
+
+-- 5) Updated 2-phase seed function (mirrors supabase/seed/seed.sql) ----------
 -- AIOps Learning Hub seed: idempotent PER OWNER, never touches progress.
 -- Usage (in Supabase SQL editor, authenticated):  select public.seed_roadmap(auth.uid());
 -- Safe to run multiple times and for many users: each owner gets their own

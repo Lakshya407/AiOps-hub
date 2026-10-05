@@ -2,12 +2,8 @@
 export interface SeedTopic { key: string; title: string; description: string; minutes: number }
 export interface SeedSkill { key: string; title: string; month: number; order: number; hours: number; description: string; topics: SeedTopic[] }
 export const PHASES = [
-  { key: 'm1', title: 'Month 1 — Infrastructure and Automation', month: 1 },
-  { key: 'm2', title: 'Month 2 — Cloud, Containers and DevOps', month: 2 },
-  { key: 'm3', title: 'Month 3 — Observability', month: 3 },
-  { key: 'm4', title: 'Month 4 — Agentic AI for Infrastructure', month: 4 },
-  { key: 'm5', title: 'Month 5 — AIOps Engineering', month: 5 },
-  { key: 'm6', title: 'Month 6 — Productionization and Career', month: 6 },
+  { key: 'p1', title: 'Phase 1 — Months 1-3 — Foundations, Cloud & DevOps', month: 1 },
+  { key: 'p2', title: 'Phase 2 — Months 4-6 — Observability, AI & AIOps', month: 2 },
 ];
 export const SKILLS: SeedSkill[] = [
   { key: 'linux', title: 'Linux', month: 1, order: 1, hours: 20, description: 'Core Linux for ops and troubleshooting. Now: Intermediate -> Target: Strong Intermediate.', topics: [
@@ -62,7 +58,7 @@ export const SKILLS: SeedSkill[] = [
     { key: 'Exception handling', title: 'Exception handling', description: 'try/except/finally, custom exceptions and robust automation.', minutes: 60 },
     { key: 'Virtual environments', title: 'Virtual environments', description: 'venv, pip, dependency management and requirements files.', minutes: 45 },
   ] },
-  { key: 'git-gitlab', title: 'Git/GitLab', month: 2, order: 5, hours: 10, description: 'Git basics, branching, merge requests, GitLab repos, CI intro, runners, variables. Now: Basic -> Target: Intermediate.', topics: [
+  { key: 'git-gitlab', title: 'Git/GitLab', month: 1, order: 5, hours: 10, description: 'Git basics, branching, merge requests, GitLab repos, CI intro, runners, variables. Now: Basic -> Target: Intermediate.', topics: [
     { key: 'Git basics', title: 'Git basics', description: 'init, add, commit, status, log and gitignore.', minutes: 90 },
     { key: 'Branching and merging', title: 'Branching and merging', description: 'branches, merges, rebases and conflict resolution.', minutes: 90 },
     { key: 'Merge requests and code review', title: 'Merge requests and code review', description: 'MR workflow, approvals, inline review and squash.', minutes: 60 },
@@ -71,7 +67,7 @@ export const SKILLS: SeedSkill[] = [
     { key: 'Runners', title: 'Runners', description: 'shared and specific runners, tags and executors.', minutes: 120 },
     { key: 'Variables and secrets', title: 'Variables and secrets', description: 'CI variables, protected and masked vars, secret handling.', minutes: 60 },
   ] },
-  { key: 'docker', title: 'Docker', month: 2, order: 6, hours: 12, description: 'Containers from images to compose. Now: Basic -> Target: Intermediate.', topics: [
+  { key: 'docker', title: 'Docker', month: 1, order: 6, hours: 12, description: 'Containers from images to compose. Now: Basic -> Target: Intermediate.', topics: [
     { key: 'Images', title: 'Images', description: 'layers, registries, tagging, caching and image optimization.', minutes: 60 },
     { key: 'Containers', title: 'Containers', description: 'lifecycle, isolation, exec, inspect and troubleshooting.', minutes: 60 },
     { key: 'Networks', title: 'Networks', description: 'bridge, host, custom networks, DNS and port mapping.', minutes: 60 },
@@ -82,7 +78,7 @@ export const SKILLS: SeedSkill[] = [
     { key: 'Container resource limits', title: 'Container resource limits', description: 'CPU, memory and resource monitoring.', minutes: 45 },
     { key: 'Container logs', title: 'Container logs', description: 'logging drivers, log rotation, inspection and troubleshooting.', minutes: 45 },
   ] },
-  { key: 'kubernetes', title: 'Kubernetes', month: 2, order: 7, hours: 24, description: 'Workloads, config, storage, security and troubleshooting. Now: Basic -> Target: Intermediate.', topics: [
+  { key: 'kubernetes', title: 'Kubernetes', month: 1, order: 7, hours: 24, description: 'Workloads, config, storage, security and troubleshooting. Now: Basic -> Target: Intermediate.', topics: [
     { key: 'Pods', title: 'Pods', description: '', minutes: 45 },
     { key: 'Deployments', title: 'Deployments', description: '', minutes: 60 },
     { key: 'Services', title: 'Services', description: '', minutes: 60 },
@@ -101,7 +97,7 @@ export const SKILLS: SeedSkill[] = [
     { key: 'Helm', title: 'Helm', description: 'install, upgrade, rollback and template.', minutes: 60 },
     { key: 'Kubernetes troubleshooting', title: 'Kubernetes troubleshooting', description: 'kubectl logs, describe, events and rollout status.', minutes: 60 },
   ] },
-  { key: 'aws', title: 'AWS', month: 3, order: 8, hours: 20, description: 'Core AWS for DevOps workloads. Now: Basic -> Target: Intermediate.', topics: [
+  { key: 'aws', title: 'AWS', month: 1, order: 8, hours: 20, description: 'Core AWS for DevOps workloads. Now: Basic -> Target: Intermediate.', topics: [
     { key: 'IAM', title: 'IAM', description: '', minutes: 60 },
     { key: 'VPC', title: 'VPC', description: '', minutes: 90 },
     { key: 'EC2', title: 'EC2', description: '', minutes: 60 },
@@ -116,7 +112,7 @@ export const SKILLS: SeedSkill[] = [
     { key: 'Elastic Kubernetes Service (EKS)', title: 'Elastic Kubernetes Service (EKS)', description: '', minutes: 90 },
     { key: 'AWS cost awareness and basic security practices', title: 'AWS cost awareness and basic security practices', description: '', minutes: 60 },
   ] },
-  { key: 'terraform', title: 'Terraform', month: 3, order: 9, hours: 14, description: 'Infrastructure as Code with Terraform. Now: Unranked -> Target: Intermediate.', topics: [
+  { key: 'terraform', title: 'Terraform', month: 1, order: 9, hours: 14, description: 'Infrastructure as Code with Terraform. Now: Unranked -> Target: Intermediate.', topics: [
     { key: 'Infrastructure as Code fundamentals', title: 'Infrastructure as Code fundamentals', description: '', minutes: 45 },
     { key: 'Providers', title: 'Providers', description: '', minutes: 30 },
     { key: 'Resources and data sources', title: 'Resources and data sources', description: '', minutes: 60 },
@@ -128,7 +124,7 @@ export const SKILLS: SeedSkill[] = [
     { key: 'AWS infrastructure provisioning', title: 'AWS infrastructure provisioning', description: '', minutes: 90 },
     { key: 'Secure secret handling and state management', title: 'Secure secret handling and state management', description: '', minutes: 45 },
   ] },
-  { key: 'cicd', title: 'CI/CD', month: 3, order: 10, hours: 12, description: 'Pipeline stages/jobs/artifacts, image builds, secrets, troubleshooting. Now: Basic -> Target: Intermediate.', topics: [
+  { key: 'cicd', title: 'CI/CD', month: 1, order: 10, hours: 12, description: 'Pipeline stages/jobs/artifacts, image builds, secrets, troubleshooting. Now: Basic -> Target: Intermediate.', topics: [
     { key: 'GitLab CI pipelines', title: 'GitLab CI pipelines', description: '', minutes: 60 },
     { key: 'Pipeline stages, jobs and artifacts', title: 'Pipeline stages, jobs and artifacts', description: '', minutes: 60 },
     { key: 'Container image builds and registries', title: 'Container image builds and registries', description: '', minutes: 60 },
@@ -136,14 +132,14 @@ export const SKILLS: SeedSkill[] = [
     { key: 'GitLab runners', title: 'GitLab runners', description: '', minutes: 45 },
     { key: 'Pipeline troubleshooting', title: 'Pipeline troubleshooting', description: '', minutes: 60 },
   ] },
-  { key: 'argocd-gitops', title: 'ArgoCD/GitOps', month: 4, order: 11, hours: 10, description: 'ArgoCD fundamentals, GitOps deploy, strategies/rollbacks. Now: Basic -> Target: Intermediate.', topics: [
+  { key: 'argocd-gitops', title: 'ArgoCD/GitOps', month: 2, order: 11, hours: 10, description: 'ArgoCD fundamentals, GitOps deploy, strategies/rollbacks. Now: Basic -> Target: Intermediate.', topics: [
     { key: 'ArgoCD fundamentals', title: 'ArgoCD fundamentals', description: '', minutes: 60 },
     { key: 'GitOps application deployment', title: 'GitOps application deployment', description: '', minutes: 60 },
     { key: 'Deployment strategies and rollbacks', title: 'Deployment strategies and rollbacks', description: '', minutes: 60 },
     { key: 'Sync, health and auto-sync', title: 'Sync, health and auto-sync', description: 'sync status, health checks, automated sync and self-heal.', minutes: 60 },
     { key: 'GitOps repo structure and multi-env', title: 'GitOps repo structure and multi-env', description: 'app of apps, overlays, promotion across environments.', minutes: 60 },
   ] },
-  { key: 'prometheus', title: 'Prometheus', month: 4, order: 12, hours: 12, description: 'Metrics, PromQL and alerting. Now: Unranked -> Target: Intermediate.', topics: [
+  { key: 'prometheus', title: 'Prometheus', month: 2, order: 12, hours: 12, description: 'Metrics, PromQL and alerting. Now: Unranked -> Target: Intermediate.', topics: [
     { key: 'Metrics', title: 'Metrics', description: 'counters, gauges, histograms and summaries.', minutes: 60 },
     { key: 'Exporters', title: 'Exporters', description: 'node exporter, kube-state-metrics and app exporters.', minutes: 45 },
     { key: 'Scraping', title: 'Scraping', description: 'scrape configs, targets, jobs and intervals.', minutes: 45 },
@@ -158,7 +154,7 @@ export const SKILLS: SeedSkill[] = [
     { key: 'Pod restarts', title: 'Pod restarts', description: '', minutes: 30 },
     { key: 'Network traffic', title: 'Network traffic', description: '', minutes: 30 },
   ] },
-  { key: 'grafana', title: 'Grafana', month: 4, order: 13, hours: 8, description: 'Dashboards and visualization. Now: Unranked -> Target: Intermediate.', topics: [
+  { key: 'grafana', title: 'Grafana', month: 2, order: 13, hours: 8, description: 'Dashboards and visualization. Now: Unranked -> Target: Intermediate.', topics: [
     { key: 'Data sources', title: 'Data sources', description: 'Prometheus and Loki wiring.', minutes: 30 },
     { key: 'Cluster dashboards', title: 'Cluster dashboards', description: '', minutes: 45 },
     { key: 'Node dashboards', title: 'Node dashboards', description: '', minutes: 45 },
@@ -169,7 +165,7 @@ export const SKILLS: SeedSkill[] = [
     { key: 'Dashboard variables', title: 'Dashboard variables', description: '', minutes: 30 },
     { key: 'Alert visualization', title: 'Alert visualization', description: '', minutes: 30 },
   ] },
-  { key: 'elastic-stack', title: 'Elastic Stack', month: 4, order: 14, hours: 12, description: 'Elasticsearch, Logstash, Kibana and Beats for search and observability. Now: Basic/working -> Target: Intermediate.', topics: [
+  { key: 'elastic-stack', title: 'Elastic Stack', month: 2, order: 14, hours: 12, description: 'Elasticsearch, Logstash, Kibana and Beats for search and observability. Now: Basic/working -> Target: Intermediate.', topics: [
     { key: 'Elasticsearch basics', title: 'Elasticsearch basics', description: 'indices, documents, mappings and cluster concepts.', minutes: 60 },
     { key: 'Elasticsearch', title: 'Elasticsearch', description: 'queries, aggregations and index management.', minutes: 60 },
     { key: 'Query DSL and search', title: 'Query DSL and search', description: 'queries, filters, full-text search and relevance.', minutes: 60 },
@@ -180,7 +176,7 @@ export const SKILLS: SeedSkill[] = [
     { key: 'Kibana', title: 'Kibana', description: 'Discover, Lens, dashboards, alerts and Spaces.', minutes: 60 },
     { key: 'Correlating logs with metrics and traces', title: 'Correlating logs with metrics and traces', description: 'trace IDs, APM and linking signals in Kibana.', minutes: 45 },
   ] },
-  { key: 'opentelemetry', title: 'OpenTelemetry', month: 5, order: 15, hours: 10, description: 'Traces, OTLP and the Collector. Now: Unranked -> Target: Working knowledge.', topics: [
+  { key: 'opentelemetry', title: 'OpenTelemetry', month: 2, order: 15, hours: 10, description: 'Traces, OTLP and the Collector. Now: Unranked -> Target: Working knowledge.', topics: [
     { key: 'Telemetry fundamentals', title: 'Telemetry fundamentals', description: 'signals: metrics, logs, traces.', minutes: 30 },
     { key: 'OTLP', title: 'OTLP', description: '', minutes: 30 },
     { key: 'Collector', title: 'Collector', description: '', minutes: 45 },
@@ -193,7 +189,7 @@ export const SKILLS: SeedSkill[] = [
     { key: 'Context propagation', title: 'Context propagation', description: 'W3C trace context.', minutes: 30 },
     { key: 'Correlation', title: 'Correlation', description: 'linking traces to metrics and logs.', minutes: 45 },
   ] },
-  { key: 'llms', title: 'LLMs', month: 5, order: 16, hours: 10, description: 'Inference and tool use for infra agents. Now: Developing -> Target: Intermediate.', topics: [
+  { key: 'llms', title: 'LLMs', month: 2, order: 16, hours: 10, description: 'Inference and tool use for infra agents. Now: Developing -> Target: Intermediate.', topics: [
     { key: 'Inference', title: 'Inference', description: '', minutes: 30 },
     { key: 'Context windows', title: 'Context windows', description: '', minutes: 30 },
     { key: 'Temperature', title: 'Temperature', description: '', minutes: 30 },
@@ -204,7 +200,7 @@ export const SKILLS: SeedSkill[] = [
     { key: 'Ollama', title: 'Ollama', description: 'local models, Modelfile and API.', minutes: 60 },
     { key: 'Local-model limitations', title: 'Local-model limitations', description: 'hallucination, context and eval.', minutes: 45 },
   ] },
-  { key: 'agentic-ai', title: 'Agentic AI', month: 5, order: 17, hours: 14, description: 'Agent loops, MCP, memory, guardrails plus RAG essentials. Now: Learning -> Target: Intermediate.', topics: [
+  { key: 'agentic-ai', title: 'Agentic AI', month: 2, order: 17, hours: 14, description: 'Agent loops, MCP, memory, guardrails plus RAG essentials. Now: Learning -> Target: Intermediate.', topics: [
     { key: 'Agent architecture', title: 'Agent architecture', description: '', minutes: 45 },
     { key: 'Planning', title: 'Planning', description: '', minutes: 45 },
     { key: 'Reasoning', title: 'Reasoning', description: 'ReAct and reflections.', minutes: 45 },
@@ -222,7 +218,7 @@ export const SKILLS: SeedSkill[] = [
     { key: 'Retrieval', title: 'Retrieval', description: 'top-k and filters.', minutes: 45 },
     { key: 'Grounding', title: 'Grounding', description: 'citations and evidence-backed answers.', minutes: 30 },
   ] },
-  { key: 'aiops', title: 'AIOps', month: 6, order: 18, hours: 16, description: 'Alert design, correlation, RCA, safe remediation and portfolio project. Now: Beginner -> Target: Project-level competency.', topics: [
+  { key: 'aiops', title: 'AIOps', month: 2, order: 18, hours: 16, description: 'Alert design, correlation, RCA, safe remediation and portfolio project. Now: Beginner -> Target: Project-level competency.', topics: [
     { key: 'Alert design', title: 'Alert design', description: '', minutes: 45 },
     { key: 'Alert thresholds', title: 'Alert thresholds', description: '', minutes: 45 },
     { key: 'Alert fatigue', title: 'Alert fatigue', description: 'signal quality and SLO-based alerts.', minutes: 45 },

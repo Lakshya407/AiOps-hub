@@ -4,7 +4,7 @@ import { supabase } from '@/lib/supabase/client';
 export type SeedTrack = 'aiops' | 'onprem';
 
 export const TRACKS: Record<SeedTrack, { label: string; tagline: string }> = {
-  aiops: { label: 'AIOps', tagline: 'Six-month AIOps engineer roadmap · 6 phases · 18 skills' },
+  aiops: { label: 'AIOps', tagline: 'AIOps engineer roadmap · 2 phases (Months 1-3, 4-6) · 18 skills' },
   onprem: { label: 'On-Prem LLM', tagline: 'Two-month on-prem LLM infra track · laptop practice → XE7740 + H200 production' },
 };
 

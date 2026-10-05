@@ -88,16 +88,29 @@ export default function Roadmap() {
     </div>
   );
 
-  type Group = { key: string; month: number; track: SeedTrack; items: { sp: SkillProgress; index: number }[] };
+  type Group = { key: string; month: number; track: SeedTrack; phaseTitle?: string; items: { sp: SkillProgress; index: number }[] };
+  const phaseTitleOf = (skill: any) => {
+    const ph = ((phases.data as any[]) ?? []).find((p) => p.id === skill?.phase_id);
+    return ph?.title as string | undefined;
+  };
   const groups: Group[] = [];
   blocks.forEach((sp, i) => {
     const m = monthOf(sp.skill) ?? 0;
     const tr = trackOf(sp.skill);
     const key = `${tr}-${m}`;
     let g = groups.find((x) => x.key === key);
-    if (!g) { g = { key, month: m, track: tr, items: [] }; groups.push(g); }
+    if (!g) { g = { key, month: m, track: tr, phaseTitle: phaseTitleOf(sp.skill), items: [] }; groups.push(g); }
     g.items.push({ sp, index: i });
   });
+  groups.sort((a, b) => a.month - b.month);
+
+  const groupLabel = (g: Group) => {
+    if (g.track === 'aiops') {
+      if (g.month === 1) return 'Phase 1 · Months 1-3';
+      if (g.month === 2) return 'Phase 2 · Months 4-6';
+    }
+    return `Month ${g.month}`;
+  };
 
   const toggleGroup = (key: string) => setCollapsed((prev) => {
     const next = new Set(prev);
@@ -130,7 +143,7 @@ export default function Roadmap() {
             <button onClick={() => toggleGroup(g.key)} aria-expanded={!isClosed}
               className="w-full flex items-center gap-3 pt-5 pb-2 text-left group">
               <span className="text-[11px] uppercase tracking-widest text-muted">
-                {track === 'all' && seeded.length > 1 ? `${TRACK_LABEL[g.track]} · ` : ''}Month {g.month} · {g.items.length} skills · {done}/{g.items.length} done · {avg}%
+                {track === 'all' && seeded.length > 1 ? `${TRACK_LABEL[g.track]} · ` : ''}{groupLabel(g)} · {g.items.length} skills · {done}/{g.items.length} done · {avg}%
               </span>
               <span className="flex-1 h-px bg-border" />
               <ChevronDown size={15} className={`text-muted transition-transform ${isClosed ? '-rotate-90' : ''}`} />

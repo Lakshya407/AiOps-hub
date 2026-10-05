@@ -57,7 +57,7 @@ export default function Login() {
     <div className="min-h-screen grid place-items-center px-4">
       <div className="w-full max-w-sm">
         <h1 className="text-xl font-semibold">AIOps Learning Hub</h1>
-        <p className="text-sm text-muted mt-1 mb-6">Personal six-month AIOps roadmap. Your progress and documents are private to your account.</p>
+        <p className="text-sm text-muted mt-1 mb-6">Personal AIOps roadmap (Months 1-3, 4-6). Your progress and documents are private to your account.</p>
         {!isSupabaseConfigured && (
           <div className="card p-3 mb-4 text-xs text-muted">Supabase is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in .env (see .env.example).</div>
         )}
